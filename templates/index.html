@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart AI Recommender</title>
+    <style>
+        :root {
+            --bg: #09111f;
+            --panel: rgba(10, 19, 35, 0.74);
+            --panel-strong: rgba(14, 25, 46, 0.94);
+            --line: rgba(255, 255, 255, 0.12);
+            --text: #f7f4ed;
+            --muted: #aab6ca;
+            --accent: #ff8f3d;
+            --accent-2: #ffd166;
+            --accent-3: #5de2e7;
+            --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(93, 226, 231, 0.18), transparent 30%),
+                radial-gradient(circle at top right, rgba(255, 143, 61, 0.2), transparent 34%),
+                linear-gradient(135deg, #050a13 0%, #0a1426 45%, #101f3f 100%);
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 34px 0 64px;
+        }
+
+        .hero {
+            overflow: hidden;
+            padding: 40px;
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+                var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .eyebrow {
+            margin: 0 0 16px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font: 600 0.8rem/1.2 Verdana, sans-serif;
+            color: var(--accent-3);
+        }
+
+        h1 {
+            max-width: 680px;
+            margin: 0;
+            font-size: clamp(2.8rem, 6vw, 5.8rem);
+            line-height: 0.94;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-copy,
+        .subtext,
+        .results-head p,
+        .product-card p,
+        .empty,
+        .metric span {
+            color: var(--muted);
+            font: 0.95rem/1.6 Verdana, sans-serif;
+        }
+
+        .hero-copy {
+            max-width: 700px;
+            margin: 18px 0 0;
+            font-size: 1.05rem;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            margin-top: 36px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 24px;
+            background: var(--panel-strong);
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field,
+        .field-full {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font: 600 0.84rem/1.2 Verdana, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #d9dfeb;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            padding: 15px 16px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+            font: 0.98rem/1.2 Verdana, sans-serif;
+        }
+
+        select option {
+            color: #111;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            font-weight: 700;
+            color: #1a0d04;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            box-shadow: 0 18px 30px rgba(255, 143, 61, 0.28);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .metric {
+            padding: 18px;
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        .results-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 16px;
+            margin: 34px 0 18px;
+        }
+
+        .results-head h2,
+        .panel h2,
+        .panel h3 {
+            margin: 0 0 14px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e3ebf9;
+            font: 0.82rem/1.2 Verdana, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .product-card {
+            overflow: hidden;
+            padding: 18px;
+            border-radius: 24px;
+            border: 1px solid var(--line);
+            background: rgba(8, 15, 29, 0.88);
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.26);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 18px;
+        }
+
+        .product-card h3 {
+            margin: 16px 0 8px;
+            font-size: 1.25rem;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            font: 0.9rem/1.2 Verdana, sans-serif;
+            color: #f8fbff;
+        }
+
+        .empty {
+            padding: 28px;
+            text-align: center;
+            border: 1px dashed rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        @media (max-width: 920px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .field-grid,
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 24px;
+            }
+
+            .results-head {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <p class="eyebrow">Precision Search + Visual Intelligence</p>
+            <h1>Turn one simple search into recommendations that feel curated.</h1>
+            <p class="hero-copy">
+                Search for exactly what the customer wants, keep results inside that intent, and tune the recommendation engine by price,
+                rating, and popularity.
+            </p>
+
+            <div class="hero-grid">
+                <form class="panel" action="/recommend" method="POST">
+                    <h2>Build the recommendation</h2>
+                    <p class="subtext">Type a keyword like <strong>mouse</strong> to keep the list focused. Category is optional, but if chosen it becomes a hard filter.</p>
+
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="query">Search Keyword</label>
+                            <input id="query" name="query" type="text" placeholder="Try mouse, headphones, stand..." value="{{ selected_query }}">
+                        </div>
+
+                        <div class="field">
+                            <label for="category">Category</label>
+                            <select id="category" name="category">
+                                <option value="">All categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field-full">
+                            <label for="product">Choose Product</label>
+                            <select id="product" name="product" required>
+                                {% for p in visible_products %}
+                                <option value="{{ p.name }}" {% if p.name == selected_product %}selected{% endif %}>{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="price">Price Priority</label>
+                            <select id="price" name="price">
+                                <option value="high">High</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="rating">Rating Priority</label>
+                            <select id="rating" name="rating">
+                                <option value="high" selected>High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <div class="field-full">
+                            <label for="popularity">Popularity Priority</label>
+                            <select id="popularity" name="popularity">
+                                <option value="high">High</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <div class="field-full">
+                            <button type="submit">Launch AI Recommendation</button>
+                        </div>
+                    </div>
+                </form>
+
+                <aside class="panel">
+                    <h3>What changed</h3>
+                    <p class="subtext">The product picker is now search-aware, so users can narrow the list before generating results.</p>
+
+                    <div class="metrics">
+                        <div class="metric">
+                            <strong>{{ filtered_products|length }}</strong>
+                            <span>Products match the current search and category filter.</span>
+                        </div>
+                        <div class="metric">
+                            <strong>{{ categories|length }}</strong>
+                            <span>Categories available for optional hard filtering.</span>
+                        </div>
+                        <div class="metric">
+                            <strong>5</strong>
+                            <span>Top recommendation slots with weighted scoring.</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section>
+            <div class="results-head">
+                <div>
+                    <h2>Live Product Preview</h2>
+                    <p>These are the products currently visible before recommendations are generated.</p>
+                </div>
+                <div class="pill">
+                    {% if selected_query %}Keyword: {{ selected_query }}{% else %}Keyword: none{% endif %}
+                </div>
+            </div>
+
+            {% if filtered_products %}
+            <div class="product-grid">
+                {% for p in filtered_products %}
+                <article class="product-card">
+                    <img src="{{ p.image_url }}" alt="{{ p.name }}">
+                    <h3>{{ p.name }}</h3>
+                    <p>{{ p.description }}</p>
+                    <div class="meta-row">
+                        <span>{{ p.category }}</span>
+                        <span>RM {{ "%.2f"|format(p.price) }}</span>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty">
+                No products match the current search. Try a broader keyword or clear the category filter.
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const allProducts = {{ products|tojson }};
+        const queryInput = document.getElementById("query");
+        const categorySelect = document.getElementById("category");
+        const productSelect = document.getElementById("product");
+
+        function matchesProduct(product, query, category) {
+            const cleanedQuery = query.trim().toLowerCase();
+            const cleanedCategory = category.trim().toLowerCase();
+            const haystack = `${product.name} ${product.category} ${product.description}`.toLowerCase();
+            const terms = cleanedQuery ? cleanedQuery.split(/\s+/).filter(Boolean) : [];
+            const queryMatch = terms.every(term => haystack.includes(term));
+            const categoryMatch = !cleanedCategory || product.category.toLowerCase() === cleanedCategory;
+            return queryMatch && categoryMatch;
+        }
+
+        function refreshProductSelect() {
+            const filtered = allProducts.filter(product => matchesProduct(product, queryInput.value, categorySelect.value));
+            const currentValue = productSelect.value;
+            productSelect.innerHTML = "";
+
+            const source = filtered.length ? filtered : allProducts;
+            let matchedCurrent = false;
+
+            source.forEach(product => {
+                const option = document.createElement("option");
+                option.value = product.name;
+                option.textContent = product.name;
+                if (product.name === currentValue) {
+                    option.selected = true;
+                    matchedCurrent = true;
+                }
+                productSelect.appendChild(option);
+            });
+
+            if (!matchedCurrent && productSelect.options.length > 0) {
+                productSelect.options[0].selected = true;
+            }
+        }
+
+        queryInput.addEventListener("input", refreshProductSelect);
+        categorySelect.addEventListener("change", refreshProductSelect);
+    </script>
+</body>
+</html>

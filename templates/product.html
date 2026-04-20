@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail</title>
+    <style>
+        :root {
+            --panel: rgba(16, 25, 44, 0.86);
+            --line: rgba(255, 255, 255, 0.1);
+            --text: #f2f5fb;
+            --muted: #a3b1c6;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top right, rgba(255, 155, 84, 0.18), transparent 28%),
+                linear-gradient(145deg, #09101d 0%, #111c33 52%, #0b1324 100%);
+        }
+
+        .page {
+            width: min(1120px, calc(100% - 28px));
+            margin: 0 auto;
+            padding: 28px 0 52px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 18px;
+            color: var(--text);
+            text-decoration: none;
+            font: 600 0.9rem/1 Verdana, sans-serif;
+        }
+
+        .detail {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            padding: 26px;
+            border-radius: 28px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
+        }
+
+        .detail img,
+        .card img {
+            width: 100%;
+            object-fit: cover;
+            border-radius: 24px;
+        }
+
+        .detail img {
+            height: 320px;
+        }
+
+        h1 {
+            margin: 0 0 14px;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+        }
+
+        .copy,
+        .card p,
+        .empty {
+            color: var(--muted);
+            font: 0.98rem/1.7 Verdana, sans-serif;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .meta span {
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            font: 0.82rem/1.2 Verdana, sans-serif;
+        }
+
+        .recommendations {
+            margin-top: 28px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 18px;
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .card img {
+            height: 160px;
+            border-radius: 18px;
+        }
+
+        .card h3 {
+            margin: 14px 0 8px;
+        }
+
+        .score {
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        .empty {
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            border: 1px dashed var(--line);
+        }
+
+        @media (max-width: 840px) {
+            .detail {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <a class="back" href="/">Back to home</a>
+
+        {% if product %}
+        <section class="detail">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            <div>
+                <h1>{{ product.name }}</h1>
+                <p class="copy">{{ product.description }}</p>
+                <div class="meta">
+                    <span>Category: {{ product.category }}</span>
+                    <span>Price: RM {{ "%.2f"|format(product.price) }}</span>
+                    <span>Rating: {{ "%.1f"|format(product.rating) }}/5</span>
+                    <span>Views: {{ product.views }}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="recommendations">
+            <h2>Related Picks</h2>
+            <div class="grid">
+                {% for item in recommendations %}
+                <a class="card" href="{{ item.product_link if item.product_link else '#' }}">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                    <h3>{{ item.name }}</h3>
+                    <p>{{ item.category }}</p>
+                    <p class="score">Score: {{ item.score }}</p>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% else %}
+        <section class="empty">Product not found.</section>
+        {% endif %}
+    </main>
+</body>
+</html>

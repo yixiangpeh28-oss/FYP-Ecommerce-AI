@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendation Results</title>
+    <style>
+        :root {
+            --panel: rgba(255, 250, 242, 0.92);
+            --line: rgba(24, 28, 40, 0.1);
+            --ink: #172033;
+            --muted: #5f6b7f;
+            --warm: #ff8a3d;
+            --teal: #2bbec7;
+            --shadow: 0 24px 60px rgba(24, 23, 34, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(255, 138, 61, 0.22), transparent 30%),
+                radial-gradient(circle at right center, rgba(43, 190, 199, 0.16), transparent 24%),
+                linear-gradient(160deg, #f8f1e6 0%, #efe2d1 100%);
+        }
+
+        .page {
+            width: min(1160px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 64px;
+        }
+
+        .hero {
+            padding: 30px;
+            border-radius: 30px;
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: var(--shadow);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-link,
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font: 600 0.82rem/1 Verdana, sans-serif;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.65);
+            color: var(--ink);
+            border: 1px solid rgba(23, 32, 51, 0.08);
+        }
+
+        h1 {
+            margin: 22px 0 10px;
+            font-size: clamp(2.4rem, 5vw, 4.8rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p,
+        .lead,
+        .why,
+        .empty {
+            color: var(--muted);
+            font: 1rem/1.7 Verdana, sans-serif;
+        }
+
+        .query-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 28px;
+        }
+
+        .result-card {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 24px;
+            padding: 22px;
+            border-radius: 28px;
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            box-shadow: var(--shadow);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 22px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--warm), #ff5f45);
+            font: 700 0.78rem/1 Verdana, sans-serif;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .result-card h2 {
+            margin: 14px 0 8px;
+            font-size: 2rem;
+        }
+
+        .result-card h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .meta span {
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(23, 32, 51, 0.05);
+            font: 0.88rem/1.2 Verdana, sans-serif;
+        }
+
+        .score-panel {
+            padding: 18px;
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(23, 32, 51, 0.04), rgba(23, 32, 51, 0.01));
+            border: 1px solid var(--line);
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 18px;
+        }
+
+        .metric p {
+            margin: 0 0 8px;
+            font: 0.84rem/1.2 Verdana, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .bar {
+            overflow: hidden;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(23, 32, 51, 0.08);
+        }
+
+        /*
+            KEY FIX: Instead of style="width: {{ value }}%" which triggers
+            VS Code's CSS validator, we use a CSS custom property --w
+            that gets set via JavaScript from a data-w attribute.
+            The Jinja2 expression is now in data-w (an HTML attribute),
+            which VS Code does NOT validate as CSS — so zero errors.
+        */
+        .bar-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--teal), var(--warm));
+            width: var(--w, 0%);
+        }
+
+        .empty {
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 840px) {
+            .result-card {
+                grid-template-columns: 1fr;
+            }
+
+            .score-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="topbar">
+                <a class="back-link" href="/">Back to search</a>
+                <div class="tag">AI Ranked Shortlist</div>
+            </div>
+            <h1>Results for {{ selected }}</h1>
+            <p>Your recommendation set now respects the current search intent, so unrelated products like keyboards will not appear for a mouse search unless the filter path allows it.</p>
+
+            <div class="query-bar">
+                <div class="tag">Keyword: {% if selected_query %}{{ selected_query }}{% else %}none{% endif %}</div>
+                <div class="tag">Category: {% if selected_category %}{{ selected_category }}{% else %}all{% endif %}</div>
+                <div class="tag">Matches: {{ recommendations|length }}</div>
+            </div>
+        </section>
+
+        {% if recommendations %}
+        <section class="grid">
+            {% for item in recommendations %}
+            <article class="result-card">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                <div>
+                    {% if loop.first %}
+                    <div class="badge">Best Match</div>
+                    {% endif %}
+
+                    <h2><a href="{{ item.product_link | default('#') }}">{{ item.name }}</a></h2>
+                    <p class="lead">{{ item.description }}</p>
+
+                    <div class="meta">
+                        <span>Category: {{ item.category }}</span>
+                        <span>Price: RM {{ "%.2f" | format(item.price) }}</span>
+                        <span>Rating: {{ "%.1f" | format(item.rating) }}/5</span>
+                        <span>Views: {{ item.views }}</span>
+                    </div>
+
+                    <div class="score-panel">
+                        <div class="score-grid">
+                            <div class="metric">
+                                <p>Final Score {{ item.score }}</p>
+                                <div class="bar">
+                                    <div class="bar-fill" data-w="{{ (item.score * 100) | round(0) }}"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <p>Similarity {{ item.similarity }}</p>
+                                <div class="bar">
+                                    <div class="bar-fill" data-w="{{ (item.similarity * 100) | round(0) }}"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <p>Price {{ item.price_score }}</p>
+                                <div class="bar">
+                                    <div class="bar-fill" data-w="{{ (item.price_score * 100) | round(0) }}"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <p>Rating {{ item.rating_score }}</p>
+                                <div class="bar">
+                                    <div class="bar-fill" data-w="{{ (item.rating_score * 100) | round(0) }}"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <p>Popularity {{ item.pop_score }}</p>
+                                <div class="bar">
+                                    <div class="bar-fill" data-w="{{ (item.pop_score * 100) | round(0) }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="why"><strong>Why this was chosen:</strong> {{ item.reason }}</p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+        {% else %}
+        <section class="empty">
+            No recommendations matched this search path. Try a broader keyword or return to search and pick a different product.
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        /* Pick up each bar's data-w value and apply it as --w so the
+           CSS width: var(--w) gets the correct percentage at runtime. */
+        document.querySelectorAll('.bar-fill').forEach(function (el) {
+            var val = el.getAttribute('data-w');
+            if (val) {
+                el.style.setProperty('--w', val + '%');
+            }
+        });
+    </script>
+</body>
+</html>
