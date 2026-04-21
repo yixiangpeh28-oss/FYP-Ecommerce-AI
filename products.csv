@@ -1,9 +1,16 @@
-id,name,category,price,rating,views,description
-1,Gaming Mouse,Electronics,120,4.5,5000,RGB gaming mouse for FPS games
-2,Office Mouse,Electronics,40,4.0,2000,Basic wireless mouse
-3,Gaming Keyboard,Electronics,200,4.7,6000,Mechanical RGB keyboard
-4,Laptop Stand,Accessories,80,4.3,1500,Adjustable aluminum stand
-5,USB-C Hub,Accessories,150,4.6,3000,Multiport adapter hub
-6,Wireless Headphones,Electronics,300,4.8,8000,Noise cancelling headphones
-7,Bluetooth Speaker,Electronics,180,4.4,3500,Portable speaker
-8,Smartphone Case,Accessories,30,4.2,1000,Protective phone case
+id,name,category,price,rating,views,description,image
+1,Gaming Mouse,Electronics,120,4.5,5000,RGB gaming mouse for FPS games,mouse1.jpg
+2,Office Mouse,Electronics,40,4.0,2000,Basic wireless mouse,mouse2.jpg
+3,Pro Wireless Mouse,Electronics,85,4.3,3000,Ergonomic wireless mouse,mouse3.jpg
+4,Silent Click Mouse,Electronics,65,4.1,1800,Quiet click mouse for office,mouse4.jpg
+5,Compact Travel Mouse,Electronics,55,4.2,2200,Portable mini mouse,mouse5.jpg
+6,Gaming Keyboard,Electronics,200,4.7,6000,Mechanical RGB keyboard,keyboard1.jpg
+7,Wireless Keyboard,Electronics,150,4.5,4000,Slim wireless keyboard,keyboard2.jpg
+8,RGB Mechanical Keyboard,Electronics,250,4.8,7000,Full size RGB mechanical keyboard,keyboard3.jpg
+9,Office Keyboard,Electronics,80,4.2,2500,Quiet membrane keyboard,keyboard4.jpg
+10,Pastel Keyboard,Electronics,180,4.6,5500,Aesthetic pastel keycaps keyboard,keyboard5.jpg
+11,Ultrabook Laptop,Electronics,3500,4.7,9000,Thin and light ultrabook laptop,laptop1.jpg
+12,MacBook Style Laptop,Electronics,4200,4.8,11000,Premium slim laptop,laptop2.jpg
+13,Business Laptop,Electronics,2800,4.5,7500,Reliable business laptop,laptop3.jpg
+14,Student Laptop,Electronics,2200,4.3,6000,Affordable student laptop,laptop4.jpg
+15,Performance Laptop,Electronics,5000,4.9,13000,High performance laptop,laptop5.jpg
